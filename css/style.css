@@ -16,7 +16,11 @@
 }
 
 .bg-bar {
-  background-color: #333333 !important;
+  background-color: #ecbb00 !important;
+}
+
+.bg-fullscreen-btn {
+  background-color: #ffe135;
 }
 
 .mr-10 {

@@ -2,17 +2,17 @@ var twist;
 var manager;
 var ros;
 var batterySub;
+var odomSub;
+var nwSub;
 var cmdVelPub;
-var servo1Pub, servo2Pub, servo3Pub;
-var servo1Val, servo2Val, servo3Val;
-var servo1Last = 0, servo2Last = 0, servo3Last = 0;
 var twistIntervalID;
-var servoIntervalID;
 var robot_hostname;
-var batterySub;
 
 var max_linear_speed = 0.5;
 var max_angular_speed = 1.2;
+
+var gamepads = navigator.getGamepads();
+console.log(gamepads);
 
 function initROS() {
 
@@ -43,34 +43,6 @@ function initROS() {
 
     cmdVelPub.advertise();
 
-    servo1Pub = new ROSLIB.Topic({
-        ros: ros,
-        name: 'servo1/angle',
-        messageType: 'std_msgs/Int16',
-        latch: true,
-        queue_size: 5
-    });
-
-    servo2Pub = new ROSLIB.Topic({
-        ros: ros,
-        name: 'servo2/angle',
-        messageType: 'std_msgs/Int16',
-        latch: true,
-        queue_size: 5
-    });
-
-    servo3Pub = new ROSLIB.Topic({
-        ros: ros,
-        name: 'servo3/angle',
-        messageType: 'std_msgs/Int16',
-        latch: true,
-        queue_size: 5
-    });
-
-    servo1Pub.advertise();
-    servo2Pub.advertise();
-    servo3Pub.advertise();
-
     systemRebootPub = new ROSLIB.Topic({
         ros: ros,
         name: 'system/reboot',
@@ -93,43 +65,22 @@ function initROS() {
     });
     batterySub.subscribe(batteryCallback);
 
-}
+    odomSub = new ROSLIB.Topic({
+        ros : ros,
+        name : 'wheel_odom',
+        messageType : 'geometry_msgs/TwistStamped',
+        queue_length: 1
+    });
+    odomSub.subscribe(odomCallback);
 
-  
-function initSliders() {
+    nwSub = new ROSLIB.Topic({
+        ros : ros,
+        name : 'wireless/connection',
+        messageType : 'wireless_msgs/Connection',
+        queue_length: 1
+    });
+    nwSub.subscribe(nwCallback);
 
-    $('#s1-slider').slider({
-        tooltip: 'show',
-        min: -90,
-        max: 90,
-        step: 1,
-        value: 0
-    });
-    $('#s1-slider').on("slide", function(slideEvt) {
-        servo1Val = slideEvt.value;
-    });
-
-    $('#s2-slider').slider({
-        tooltip: 'show',
-        min: -90,
-        max: 90,
-        step: 1,
-        value: 0
-    });
-    $('#s2-slider').on("slide", function(slideEvt) {
-        servo2Val = slideEvt.value;
-    });
-
-    $('#s3-slider').slider({
-        tooltip: 'show',
-        min: -90,
-        max: 90,
-        step: 1,
-        value: 0
-    });
-    $('#s3-slider').on("slide", function(slideEvt) {
-        servo3Val = slideEvt.value;
-    });
 }
 
 function createJoystick() {
@@ -138,7 +89,7 @@ function createJoystick() {
 
     manager = nipplejs.create({
         zone: joystickContainer,
-        position: { left: 65 + '%', top: 50 + '%' },
+        position: { left: 75 + '%', top: 50 + '%' },
         mode: 'static',
         size: 200,
         color: '#ffffff',
@@ -191,40 +142,20 @@ function initTeleopKeyboard() {
 }
 
 function batteryCallback(message) {
-    document.getElementById('batteryID').innerHTML = 'Voltage: ' + message.data.toPrecision(4) + 'V';
+    document.getElementById('batteryID').innerHTML = 'Voltage: ' + message.data.toFixed(4) + 'V';
+}
+
+function odomCallback(message) {
+    document.getElementById('actualSpeed').innerHTML = 'Speed: ' + (message.twist.linear.x * 3.6).toFixed(4) + 'km/h';
+}
+
+function nwCallback(message) {
+    document.getElementById('nw_ssid').innerHTML = 'SSID: ' + message.essid;
+    document.getElementById('nw_bitrate').innerHTML = 'Bitrate: ' + message.bitrate.toFixed(3) + 'Mb/s';
 }
 
 function publishTwist() {
     cmdVelPub.publish(twist);
-}
-
-function publishServos() {
-    var servoMsg;
-
-    if (servo1Val != servo1Last) {
-        servo1Last = servo1Val;
-        servoMsg = new ROSLIB.Message({
-            data: servo1Val
-        });
-        servo1Pub.publish(servoMsg);
-    }
-
-    if (servo2Val != servo2Last) {
-        servo2Last = servo2Val;
-        servoMsg = new ROSLIB.Message({
-            data: servo2Val
-        });
-        servo2Pub.publish(servoMsg);
-    }
-
-    if (servo3Val != servo3Last) {
-        servo3Last = servo3Val;
-        servoMsg = new ROSLIB.Message({
-            data: servo3Val
-        });
-        servo3Pub.publish(servoMsg);
-    }
-
 }
 
 function systemReboot(){
@@ -243,14 +174,12 @@ window.onblur = function(){
 
 function shutdown() {
     clearInterval(twistIntervalID);
-    clearInterval(servoIntervalID);
     cmdVelPub.unadvertise();
-    servo1Pub.unadvertise();
-    servo2Pub.unadvertise();
-    servo3Pub.unadvertise();
     systemRebootPub.unadvertise();
     systemShutdownPub.unadvertise();
     batterySub.unsubscribe();
+    odomSub.unsubscribe();
+    nwSub.unsubscribe();
     ros.close();
 }
 
@@ -259,7 +188,6 @@ window.onload = function () {
     robot_hostname = location.hostname;
 
     initROS();
-    initSliders();
     initTeleopKeyboard();
     createJoystick();
 
@@ -268,9 +196,17 @@ window.onload = function () {
     
     twistIntervalID = setInterval(() => publishTwist(), 100); // 10 hz
 
-    servoIntervalID = setInterval(() => publishServos(), 100); // 10 hz
-
     window.addEventListener("beforeunload", () => shutdown());
+
+    window.addEventListener("gamepadconnected", (event) => {
+        console.log("A gamepad connected:");
+        console.log(event.gamepad);
+      });
+      
+      window.addEventListener("gamepaddisconnected", (event) => {
+        console.log("A gamepad disconnected:");
+        console.log(event.gamepad);
+      });
 }
 
 
