@@ -142,16 +142,16 @@ function initTeleopKeyboard() {
 }
 
 function batteryCallback(message) {
-    document.getElementById('batteryID').innerHTML = 'Voltage: ' + message.data.toFixed(4) + 'V';
+    document.getElementById('batteryID').innerHTML = 'Voltage: ' + message.data.toFixed(2) + 'V';
 }
 
 function odomCallback(message) {
-    document.getElementById('actualSpeed').innerHTML = 'Speed: ' + (message.twist.linear.x * 3.6).toFixed(4) + 'km/h';
+    document.getElementById('actualSpeed').innerHTML = 'Speed: ' + (message.twist.linear.x * 3.6).toFixed(2) + 'km/h';
 }
 
 function nwCallback(message) {
     document.getElementById('nw_ssid').innerHTML = 'SSID: ' + message.essid;
-    document.getElementById('nw_bitrate').innerHTML = 'Bitrate: ' + message.bitrate.toFixed(3) + 'Mb/s';
+    document.getElementById('nw_bitrate').innerHTML = 'Bitrate: ' + message.bitrate.toFixed(2) + 'Mb/s';
 }
 
 function publishTwist() {
