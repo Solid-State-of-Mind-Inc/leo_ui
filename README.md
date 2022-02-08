@@ -7,7 +7,7 @@ The main functionalities include:
 - streaming the camera image
 - reading battery voltage
 - rebooting and shutting down
-- setting position on the servos connected to [hServo] ports
+- headlights checkbox
 
 ### User Interface Communication
 
