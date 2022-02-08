@@ -20,6 +20,22 @@ function initROS() {
         url: "ws://" + robot_hostname + ":9090"
     });
 
+    relay1Pub = new ROSLIB.Topic({
+        ros: ros,
+        name: '/relay1',
+        messageType: 'std_msgs/Bool',
+        queue_size: 5
+    });
+
+    relay2Pub = new ROSLIB.Topic({
+        ros: ros,
+        name: '/relay2',
+        messageType: 'std_msgs/Bool',
+        queue_size: 5
+    });
+    relay1Pub.advertise();
+    relay2Pub.advertise();
+
     // Init message with zero values.
     twist = new ROSLIB.Message({
         linear: {                                                                   
@@ -40,7 +56,6 @@ function initROS() {
         messageType: 'geometry_msgs/Twist',
         queue_size: 10
     });
-
     cmdVelPub.advertise();
 
     systemRebootPub = new ROSLIB.Topic({
@@ -72,14 +87,6 @@ function initROS() {
         queue_length: 1
     });
     odomSub.subscribe(odomCallback);
-
-    nwSub = new ROSLIB.Topic({
-        ros : ros,
-        name : 'wireless/connection',
-        messageType : 'wireless_msgs/Connection',
-        queue_length: 1
-    });
-    nwSub.subscribe(nwCallback);
 
 }
 
@@ -149,13 +156,27 @@ function odomCallback(message) {
     document.getElementById('actualSpeed').innerHTML = 'Speed: ' + (message.twist.linear.x * 3.6).toFixed(2) + ' km/h';
 }
 
-function nwCallback(message) {
-    document.getElementById('nw_ssid').innerHTML = 'SSID: ' + message.essid;
-    document.getElementById('nw_bitrate').innerHTML = 'Bitrate: ' + message.bitrate.toFixed(2) + ' Mb/s';
-}
-
 function publishTwist() {
     cmdVelPub.publish(twist);
+}
+
+function switchLights(){
+    var relayMsg;
+    var checkBox = document.getElementById("lights-checkbox");
+
+    if (checkBox.checked == true){
+       relayMsg = new ROSLIB.Message({
+            data: true
+        });
+    }
+    else {
+        relayMsg = new ROSLIB.Message({
+            data: false
+        });
+    }
+    relay1Pub.publish(relayMsg);
+    relay2Pub.publish(relayMsg);
+    
 }
 
 function systemReboot(){
@@ -174,12 +195,13 @@ window.onblur = function(){
 
 function shutdown() {
     clearInterval(twistIntervalID);
+    relay1Pub.unadvertise();
+    relay2Pub.unadvertise();
     cmdVelPub.unadvertise();
     systemRebootPub.unadvertise();
     systemShutdownPub.unadvertise();
     batterySub.unsubscribe();
     odomSub.unsubscribe();
-    nwSub.unsubscribe();
     ros.close();
 }
 

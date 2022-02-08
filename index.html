@@ -18,8 +18,8 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 
 		<!-- icons -->
-		<link rel="shortcut icon" href="./img/favicon-1.png">
-		<link rel="apple-touch-icon-precomposed" href="./img/favicon-1.png">
+		<link rel="shortcut icon" href="./img/favicon.ico">
+		<link rel="apple-touch-icon-precomposed" href="./img/apple-touch-icon.png">
 		<link rel="manifest" href="./manifest.webmanifest">
 
 		<link rel="stylesheet" href="css/bootstrap.min.css" />
@@ -44,30 +44,24 @@
 
 	<nav class="navbar navbar-expand-md bg-bar"> 
 			<div class="navbar-brand">
-				<img class="rounded" src="./img/logoSSoM.png" alt="Logo" style="width: 40px; height: 40px;"/>
+				<img class="rounded" src="./img/logo_couleur_small.png" alt="Logo" style="width: 40px; height: 40px;"/>
 			</div>
 
 			<div class="col text-center">
 				<div class="navbar-text" id="batteryID">Voltage: 0.00 V</div>
 			</div>
 
+			<div >
+				<label class="switch">
+					<input type="checkbox" id="lights-checkbox" onclick="switchLights()">
+					<span class="slider"></span>
+				</label>
+				Headlights
+			</div>
+
 			<div class="col text-center">
 				<div class="navbar-text" id="actualSpeed">Speed: 0.00 km/h</div>
 			</div>
-
-			<!-- <div class="col text-center">
-				<button class="bg-fullscreen-btn btn-sm mx-auto" style="width: 45px; height: 45px;" type="button" onclick="fullScreen()">
-					<img class="rounded img-fluid" src="img/nav-bar-fullscreen.svg" alt="FullScreen" style="width: 25px; height: 25px;"/>
-				</button>
-			</div> -->
-
-			<!-- <div class="col text-center">
-				<div class="navbar-text" id="nw_ssid">SSID: Unknown</div>
-			</div>
-
-			<div class="col text-center">
-				<div class="navbar-text" id="nw_bitrate">Bitrate: 00.0 Mb/s</div>
-			</div> -->
 
 			<div class="btn-group" role="group">
 				<button type="button" class="btn btn-warning btn-sm custom-btn" onclick="systemReboot()">Reboot</button>
