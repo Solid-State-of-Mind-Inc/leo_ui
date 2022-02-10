@@ -11,9 +11,6 @@ var robot_hostname;
 var max_linear_speed = 0.5;
 var max_angular_speed = 1.2;
 
-var gamepads = navigator.getGamepads();
-console.log(gamepads);
-
 function initROS() {
 
     ros = new ROSLIB.Ros({
@@ -166,12 +163,12 @@ function switchLights(){
 
     if (checkBox.checked == true){
        relayMsg = new ROSLIB.Message({
-            data: true
+            data: false
         });
     }
     else {
         relayMsg = new ROSLIB.Message({
-            data: false
+            data: true
         });
     }
     relay1Pub.publish(relayMsg);
@@ -220,15 +217,6 @@ window.onload = function () {
 
     window.addEventListener("beforeunload", () => shutdown());
 
-    window.addEventListener("gamepadconnected", (event) => {
-        console.log("A gamepad connected:");
-        console.log(event.gamepad);
-      });
-      
-      window.addEventListener("gamepaddisconnected", (event) => {
-        console.log("A gamepad disconnected:");
-        console.log(event.gamepad);
-      });
 }
 
 
