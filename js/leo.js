@@ -3,7 +3,6 @@ var manager;
 var ros;
 var batterySub;
 var odomSub;
-var relay1StatusSub
 var cmdVelPub;
 var twistIntervalID;
 var robot_hostname;
@@ -81,13 +80,6 @@ function initROS() {
     });
     odomSub.subscribe(odomCallback);
 
-    relay1StatusSub = new ROSLIB.Topic({
-        ros : ros,
-        name : '/core2/relay1_status',
-        messageType : 'std_msgs/Bool',
-        queue_length: 1
-    });
-    relay1StatusSub.subscribe(relay1StatusCallback);
 }
 
 function createJoystick() {
