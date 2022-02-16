@@ -17,21 +17,17 @@ function initROS() {
         url: "ws://" + robot_hostname + ":9090"
     });
 
-    relay1Pub = new ROSLIB.Topic({
+    relay1Client = new ROSLIB.Service({
         ros: ros,
-        name: '/relay1',
-        messageType: 'std_msgs/Bool',
-        queue_size: 5
+        name: '/core2/set_relay1',
+        serviceType: 'std_srvs/SetBool'
     });
 
-    relay2Pub = new ROSLIB.Topic({
+    relay2Client = new ROSLIB.Service({
         ros: ros,
-        name: '/relay2',
-        messageType: 'std_msgs/Bool',
-        queue_size: 5
+        name: '/core2/set_relay2',
+        serviceType: 'std_srvs/SetBool'
     });
-    relay1Pub.advertise();
-    relay2Pub.advertise();
 
     // Init message with zero values.
     twist = new ROSLIB.Message({
@@ -85,6 +81,13 @@ function initROS() {
     });
     odomSub.subscribe(odomCallback);
 
+    relay1StatusSub = new ROSLIB.Topic({
+        ros : ros,
+        name : '/core2/relay1_status',
+        messageType : 'std_msgs/Bool',
+        queue_length: 1
+    });
+    relay1StatusSub.subscribe(relay1StatusCallback);
 }
 
 function createJoystick() {
@@ -153,27 +156,31 @@ function odomCallback(message) {
     document.getElementById('actualSpeed').innerHTML = 'Speed: ' + (message.twist.linear.x * 3.6).toFixed(2) + ' km/h';
 }
 
+function relay1StatusCallback(message) {
+    var checkBox = document.getElementById("lights-checkbox");
+    checkBox.checked = !message.data;
+}
+
 function publishTwist() {
     cmdVelPub.publish(twist);
 }
 
 function switchLights(){
-    var relayMsg;
+    var relayReq;
     var checkBox = document.getElementById("lights-checkbox");
 
     if (checkBox.checked == true){
-       relayMsg = new ROSLIB.Message({
+        relayReq = new ROSLIB.ServiceRequest({
             data: false
         });
     }
     else {
-        relayMsg = new ROSLIB.Message({
+        relayReq = new ROSLIB.ServiceRequest({
             data: true
         });
     }
-    relay1Pub.publish(relayMsg);
-    relay2Pub.publish(relayMsg);
-    
+    relay1Client.callService(relayReq);
+    relay2Client.callService(relayReq);
 }
 
 function systemReboot(){
@@ -192,8 +199,6 @@ window.onblur = function(){
 
 function shutdown() {
     clearInterval(twistIntervalID);
-    relay1Pub.unadvertise();
-    relay2Pub.unadvertise();
     cmdVelPub.unadvertise();
     systemRebootPub.unadvertise();
     systemShutdownPub.unadvertise();
