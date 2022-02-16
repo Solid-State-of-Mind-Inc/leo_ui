@@ -3,8 +3,9 @@ var manager;
 var ros;
 var batterySub;
 var odomSub;
-var nwSub;
 var cmdVelPub;
+var relay1Pub;
+var relay2Pub;
 var twistIntervalID;
 var robot_hostname;
 
@@ -21,14 +22,14 @@ function initROS() {
         ros: ros,
         name: '/relay1',
         messageType: 'std_msgs/Bool',
-        queue_size: 5
+        queue_size: 1
     });
 
     relay2Pub = new ROSLIB.Topic({
         ros: ros,
         name: '/relay2',
         messageType: 'std_msgs/Bool',
-        queue_size: 5
+        queue_size: 1
     });
     relay1Pub.advertise();
     relay2Pub.advertise();
@@ -57,14 +58,14 @@ function initROS() {
 
     systemRebootPub = new ROSLIB.Topic({
         ros: ros,
-        name: 'system/reboot',
+        name: 'leo_system/reboot',
         messageType: 'std_msgs/Empty'
     });
     systemRebootPub.advertise();
 
     systemShutdownPub = new ROSLIB.Topic({
         ros: ros,
-        name: 'system/shutdown',
+        name: 'leo_system/shutdown',
         messageType: 'std_msgs/Empty'
     });
     systemShutdownPub.advertise();
