@@ -3,7 +3,7 @@ var manager;
 var ros;
 var batterySub;
 var odomSub;
-var nwSub;
+var relay1StatusSub
 var cmdVelPub;
 var twistIntervalID;
 var robot_hostname;
@@ -53,14 +53,14 @@ function initROS() {
 
     systemRebootPub = new ROSLIB.Topic({
         ros: ros,
-        name: 'system/reboot',
+        name: 'leo_system/reboot',
         messageType: 'std_msgs/Empty'
     });
     systemRebootPub.advertise();
 
     systemShutdownPub = new ROSLIB.Topic({
         ros: ros,
-        name: 'system/shutdown',
+        name: 'leo_system/shutdown',
         messageType: 'std_msgs/Empty'
     });
     systemShutdownPub.advertise();
